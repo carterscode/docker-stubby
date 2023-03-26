@@ -25,7 +25,7 @@ RUN \
 COPY . /usr/src/stubby/stubby/
 WORKDIR /usr/src/stubby/stubby/
 RUN echo $(ls /usr/src/stubby/)
-RUN echo $(ls /usr/src/stubb/stubby/)
+RUN echo $(ls /usr/src/stubby/stubby/)
 
 RUN cmake .
 RUN make
