@@ -17,8 +17,6 @@ jobs:
 
       - name: Clone repository
         uses: actions/checkout@v2
-        with:
-          ref: ${{ steps.vars.outputs.tag }}
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v1
