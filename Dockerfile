@@ -6,8 +6,9 @@ RUN \
   apt-get update && \
   apt-get -y upgrade && \
   apt-get -y dist-upgrade && \
-  apt-get -y install \
+  apt-get install -y --no-install-recommends \
     autoconf \
+    apt-utils \
     build-essential \
     g++ \
     ca-certificates \
