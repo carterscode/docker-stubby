@@ -9,6 +9,7 @@ RUN \
   apt-get -y install \
     autoconf \
     build-essential \
+    g++ \
     ca-certificates \
     cmake \
     libgetdns-dev \
