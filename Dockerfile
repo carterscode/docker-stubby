@@ -48,16 +48,16 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/
 
-COPY --from=builder /usr/src/stubby /usr/local/bin
-COPY --from=builder /usr/src/stubby/stubby.yml.example /usr/local/etc/stubby/stubby.yml
+COPY --from=builder /usr/src/stubby/stubby /usr/local/bin
+COPY --from=builder /usr/src/stubby/stubby/stubby.yml.example /usr/local/etc/stubby/stubby/stubby.yml
 
 # Modify provided configuration file to listen on '0.0.0.0'. This is
 # required for receiving incoming connections from outside the container.
 RUN sed -i 's/^listen_addresses:/listen_addresses:\n  - 0.0.0.0/' \
-    /usr/local/etc/stubby/stubby.yml
+    /usr/local/etc/stubby/stubby/stubby.yml
 # Check if previous step succeeded (build will fail otherwise).
 RUN grep --before-context 1 --after-context 3 '^  - 0.0.0.0$' \
-    /usr/local/etc/stubby/stubby.yml
+    /usr/local/etc/stubby/stubby/stubby.yml
 
 # Notice: since program is not catching TERM signal, it will be forcefully
 # killed by Docker runtime on stop after timeout (see issue #188).
