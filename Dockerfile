@@ -27,7 +27,7 @@ WORKDIR /usr/src/stubby/
 RUN echo $(ls /usr/src/stubby/)
 RUN echo $(ls /usr/src/stubby/stubby/)
 
-RUN cmake .
+RUN cd stubby && cmake .
 RUN make
 
 # Final image.
