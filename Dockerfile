@@ -22,8 +22,8 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/
 
-COPY . /usr/src/stubby/stubby/
-WORKDIR /usr/src/stubby/stubby/
+COPY . /usr/src/stubby/
+WORKDIR /usr/src/stubby/
 RUN echo $(ls /usr/src/stubby/)
 RUN echo $(ls /usr/src/stubby/stubby/)
 
