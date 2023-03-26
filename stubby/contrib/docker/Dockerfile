@@ -1,16 +1,12 @@
 # Build stage.
-FROM debian:bullseye-slim AS builder
+FROM debian:bullseye AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN \
   apt-get update && \
-  apt-get -y upgrade && \
-  apt-get -y dist-upgrade && \
-  apt-get install -y --no-install-recommends \
+  apt-get -y install \
     autoconf \
-    apt-utils \
     build-essential \
-    g++ \
     ca-certificates \
     cmake \
     libgetdns-dev \
@@ -22,22 +18,18 @@ RUN \
   apt-get clean && \
   rm -rf /var/lib/apt/lists/
 
-COPY . /usr/src/stubby/stubby/
-WORKDIR /usr/src/stubby/stubby/
-RUN echo $(ls /usr/src/stubb/)
-RUN echo $(ls /usr/src/stubb/stubby/)
+COPY . /usr/src/stubby/
+WORKDIR /usr/src/stubby/
 
 RUN cmake .
 RUN make
 
 # Final image.
-FROM debian:bullseye-slim
+FROM debian:bullseye
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN \
   apt-get update && \
-  apt-get -y upgrade && \
-  apt-get -y dist-upgrade && \
   apt-get -y install \
     ca-certificates \
     libgetdns10 \
