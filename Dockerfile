@@ -25,11 +25,9 @@ RUN \
 COPY . /usr/src/stubby/
 WORKDIR /usr/src/stubby/
 RUN echo $(ls /usr/src/stubby/)
-RUN echo $(ls /usr/src/stubby/stubby/)
 
-RUN cd stubby && cmake .
-RUN make clean
-RUN make
+RUN cd /usr/src/stubby/stubby && cmake .
+RUN cd /usr/src/stubby/stubby && make
 
 # Final image.
 FROM debian:bullseye-slim
