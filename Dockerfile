@@ -28,6 +28,7 @@ RUN echo $(ls /usr/src/stubby/)
 RUN echo $(ls /usr/src/stubby/stubby/)
 
 RUN cd stubby && cmake .
+RUN make clean
 RUN make
 
 # Final image.
