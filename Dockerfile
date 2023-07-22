@@ -1,51 +1,64 @@
-# Use Debian Bullseye Slim base image
+# Build stage.
+FROM debian:bullseye-slim AS builder
+
+ARG DEBIAN_FRONTEND=noninteractive
+RUN \
+  apt-get update && \
+  apt-get -y upgrade && \
+  apt-get -y dist-upgrade && \
+  apt-get install -y --no-install-recommends \
+    autoconf \
+    apt-utils \
+    build-essential \
+    g++ \
+    ca-certificates \
+    cmake \
+    libgetdns-dev \
+    libidn2-0-dev \
+    libssl-dev \
+    libunbound-dev \
+    libyaml-dev \
+  && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/
+
+COPY . /usr/src/stubby/
+WORKDIR /usr/src/stubby/
+RUN echo $(ls /usr/src/stubby/)
+
+RUN cd /usr/src/stubby/stubby && cmake .
+RUN cd /usr/src/stubby/stubby && make
+
+# Final image.
 FROM debian:bullseye-slim
 
-# Set environment variable for the UnrealIRCd version
-ENV UNREAL_VERSION=unrealircd-latest
+ARG DEBIAN_FRONTEND=noninteractive
+RUN \
+  apt-get update && \
+  apt-get -y upgrade && \
+  apt-get -y dist-upgrade && \
+  apt-get -y install \
+    ca-certificates \
+    libgetdns10 \
+    libidn2-0 \
+    libunbound8 \
+    libyaml-0-2 \
+    openssl \
+  && \
+  apt-get clean && \
+  rm -rf /var/lib/apt/lists/
 
-# Update package manager and install necessary dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    wget \
-    libssl-dev \
-    pkg-config \
-    gdb \
-    libpcre2-dev \ 
-    libargon2-dev \
-    libsodium-dev \
-    libc-ares-dev \
-    libcurl4-openssl-dev \
-    tcl
+COPY --from=builder /usr/src/stubby/stubby /usr/local/bin
+COPY --from=builder /usr/src/stubby/stubby/stubby.yml.example /usr/local/etc/stubby/stubby/stubby.yml
 
-# Download and extract the latest stable version of UnrealIRCd
-RUN wget -O unrealircd.tar.gz https://www.unrealircd.org/downloads/${UNREAL_VERSION}.tar.gz && \
-    tar xvzf unrealircd.tar.gz && \
-    rm unrealircd.tar.gz
+# Modify provided configuration file to listen on '0.0.0.0'. This is
+# required for receiving incoming connections from outside the container.
+RUN sed -i 's/^listen_addresses:/listen_addresses:\n  - 0.0.0.0/' \
+    /usr/local/etc/stubby/stubby/stubby.yml
+# Check if previous step succeeded (build will fail otherwise).
+RUN grep --before-context 1 --after-context 3 '^  - 0.0.0.0$' \
+    /usr/local/etc/stubby/stubby/stubby.yml
 
-# Find the extracted directory name dynamically (in case it changes in the future)
-RUN cd $(find . -maxdepth 1 -type d -name "unrealircd-*") && \
-    mv * /unrealircd && \
-    cd / && \
-    rm -rf $(find . -maxdepth 1 -type d -name "unrealircd-*")
-
-# Set working directory to UnrealIRCd source directory
-WORKDIR /unrealircd
-
-# Configure and compile UnrealIRCd
-RUN ./Config && \
-    make && \
-    make install
-
-# Expose the IRC ports
-EXPOSE 6667
-EXPOSE 6697
-
-# Copy the default configuration file to the container
-COPY unrealircd.conf.default /home/user/unrealircd/conf/unrealircd.conf
-
-# Set the user as 'ircd'
-USER ircd
-
-# Start UnrealIRCd
-CMD ["/home/user/unrealircd/UnrealIRCd", "foreground"]
+# Notice: since program is not catching TERM signal, it will be forcefully
+# killed by Docker runtime on stop after timeout (see issue #188).
+ENTRYPOINT [ "stubby" ]
