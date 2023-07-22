@@ -1,5 +1,5 @@
 # Build stage.
-FROM debian:bullseye-slim AS builder
+FROM debian:bookworm-slim AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN \
@@ -30,7 +30,7 @@ RUN cd /usr/src/stubby/stubby && cmake .
 RUN cd /usr/src/stubby/stubby && make
 
 # Final image.
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN \
